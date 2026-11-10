@@ -10,10 +10,10 @@
   "dependencies": {
     "@fontsource-variable/inter": "5.3.0",
     "@fontsource-variable/jetbrains-mono": "5.3.0",
-    "jose": "6.2.17",
     "mongoose": "9.12.1",
     "mongoose-paginate-v2": "1.9.5",
     "next": "16.4.6",
+    "next-auth": "4.24.15",
     "react": "19.3.1",
     "react-dom": "19.3.1"
   },
