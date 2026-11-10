@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { CATEGORIES } from "@/lib/data";
 import { ROLES, SKILLS } from "@/lib/guide";
@@ -97,17 +98,15 @@ export default function ProfileForm() {
         <button type="button" className="btn btn--ghost btn--small" onClick={logout}>
           Cerrar sesión
         </button>
+        <Link href="/panel" className="btn btn--small">
+          {user.access === "admin" ? "Panel admin" : "Mi equipo y entrega"}
+        </Link>
         <button type="button" className="link-danger" onClick={remove}>
           Borrar mi cuenta
         </button>
       </aside>
 
       <div className="profile-fields">
-        <label>
-          Nombre del equipo
-          <input value={p.team} onChange={(e) => set("team", e.target.value)} placeholder="Ej: Orbital Salta" />
-        </label>
-
         <div className="two">
           <label>
             Tu rol

@@ -17,6 +17,7 @@ function GoogleG() {
 
 const ERRORS: Record<string, string> = {
   error: "No pudimos iniciar sesión. Probá de nuevo.",
+  login: "Iniciá sesión para entrar al panel.",
   config: "El login todavía no está configurado en el servidor.",
 };
 

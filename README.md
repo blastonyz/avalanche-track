@@ -32,6 +32,13 @@ Base `builders`, colección `users` (modelo en `lib/models/User.ts`). Variables:
 En Atlas: Database Access > usuario con rol `readWrite` solo sobre `builders`; Network Access > `0.0.0.0/0`
 (Vercel no tiene IP fija). Si la clave tiene caracteres raros, codificala (`@` -> `%40`).
 
+## Roles, equipos y entrega
+
+- `User.access`: `user` (default) o `admin`. Ninguna ruta lo modifica: para hacer admin a alguien, cambiá `access` a `"admin"` en Atlas (colección `users`). Un valor inválido no da acceso.
+- Un builder, un equipo: `haveTeam` + `team` se mueven juntos en `lib/team.ts` (`createTeam`, `joinTeam`, `leaveTeam`) con un update atómico. Máximo por equipo: `MAX_TEAM` en `lib/rules.ts`.
+- Modelos: `User` -> `Team` (members con mail y nombre) -> `Project` (pitch, video, demo, código, completed).
+- `/panel` usa rutas paralelas: `@builder` (equipo y entrega) y `@admin` (listas paginadas con mongoose-paginate-v2).
+
 ## Versiones fijas (seguridad)
 
 `next`, `react` y `react-dom` están fijados sin `^` (Next 16.4.6, que incluye los fixes del

@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FUJI } from "@/lib/links";
+import { registerWallet, useUser } from "@/lib/user";
 import { getEth } from "@/lib/wallet";
 
 const short = (a: string) => `${a.slice(0, 6)}…${a.slice(-4)}`;
@@ -19,6 +20,17 @@ function WalletIcon() {
 export default function ConnectWallet() {
   const [addr, setAddr] = useState<string | null>(null);
   const [msg, setMsg] = useState("");
+  const user = useUser();
+  const sent = useRef("");
+
+  // Conectada + sesión iniciada + wallet del perfil vacía -> la registra (una vez por dirección).
+  useEffect(() => {
+    if (!addr || !user || user.access !== "user" || user.profile.wallet) return;
+    const key = `${user.id}:${addr}`;
+    if (sent.current === key) return;
+    sent.current = key;
+    void registerWallet(addr);
+  }, [addr, user]);
 
   useEffect(() => {
     const eth = getEth();

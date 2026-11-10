@@ -1,11 +1,13 @@
-import { Schema, model, models, type InferSchemaType, type Model } from "mongoose";
+import { Schema, model, models, type InferSchemaType, type Model, type PaginateModel } from "mongoose";
+import paginate from "mongoose-paginate-v2";
 import { CATEGORIES } from "../data";
 import { ROLES } from "../guide";
 
 export const ROLE_IDS: string[] = ROLES.map((r) => r.id);
 export const CATEGORY_IDS: string[] = CATEGORIES.map((c) => c.id);
+export const ACCESS = ["user", "admin"] as const;
 
-/** Modelo mínimo. Base: builders · colección: users. */
+/** Base: builders · colección: users. */
 const schema = new Schema(
   {
     googleId: { type: String, required: true, unique: true },
@@ -13,7 +15,13 @@ const schema = new Schema(
     name: { type: String, default: "", maxlength: 120 },
     picture: { type: String, default: "" },
 
-    team: { type: String, default: "", maxlength: 60 },
+    // Rol: "user" por defecto. Se cambia a "admin" a mano desde la base; ninguna ruta lo modifica.
+    access: { type: String, enum: ACCESS, default: "user", index: true },
+
+    // Un builder, un solo equipo. haveTeam se mueve siempre junto con `team` (ver lib/team.ts).
+    haveTeam: { type: Boolean, default: false, index: true },
+    team: { type: Schema.Types.ObjectId, ref: "Team", default: null },
+
     role: { type: String, enum: [...ROLE_IDS, ""], default: "" },
     category: { type: String, enum: [...CATEGORY_IDS, ""], default: "" },
     skills: { type: [String], default: [] },
@@ -25,7 +33,10 @@ const schema = new Schema(
   },
   { timestamps: true },
 );
+schema.plugin(paginate);
 
 export type UserDoc = InferSchemaType<typeof schema>;
-export const UserModel: Model<UserDoc> =
-  (models.User as Model<UserDoc> | undefined) ?? model<UserDoc>("User", schema);
+export const UserModel: PaginateModel<UserDoc> =
+  (models.User as PaginateModel<UserDoc> | undefined) ??
+  (model<UserDoc>("User", schema) as unknown as PaginateModel<UserDoc>);
+export type UserModelT = Model<UserDoc>;

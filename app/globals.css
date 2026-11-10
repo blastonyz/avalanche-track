@@ -3077,3 +3077,34 @@ button.chip[aria-pressed="true"] {
 a.g-btn {
   text-decoration: none;
 }
+
+/* Panel */
+.panel-grid { display: grid; gap: 24px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); align-items: start; }
+.panel-box { border: 1px solid var(--line); background: var(--bg-deep); padding: 24px; display: grid; gap: 14px; }
+.panel-box h2 { margin: 0; font-size: 1.125rem; }
+.panel-box label { display: grid; gap: 6px; font-size: 0.875rem; color: var(--gray); }
+.panel-box input[type="text"], .panel-box input:not([type]), .panel-box input[type="url"] {
+  width: 100%; background: var(--bg); color: var(--paper); border: 1px solid var(--line); padding: 10px 12px; font: inherit; border-radius: 0;
+}
+.panel-box input:focus-visible { outline: 2px solid var(--red-hot); outline-offset: 1px; }
+.panel-box .check { display: flex; align-items: center; gap: 10px; }
+.panel-box .inline { display: grid; gap: 10px; }
+.panel-box .muted, .muted { color: var(--gray); font-size: 0.8125rem; margin: 0; }
+.code { font-family: var(--font-mono, ui-monospace, monospace); letter-spacing: 0.12em; background: var(--bg); border: 1px solid var(--line); padding: 4px 10px; }
+.members { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.members li { display: flex; flex-wrap: wrap; gap: 4px 10px; border-top: 1px solid var(--line); padding-top: 8px; }
+.members span { color: var(--gray); }
+.admin .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; margin: 0 0 24px; }
+.admin .stats div { border: 1px solid var(--line); padding: 16px; }
+.admin .stats dt { color: var(--gray); font-size: 0.8125rem; }
+.admin .stats dd { margin: 4px 0 0; font-size: 1.75rem; font-weight: 600; }
+.admin .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin-bottom: 16px; }
+.admin .tabs a { padding: 10px 16px; color: var(--gray); text-decoration: none; border-bottom: 2px solid transparent; }
+.admin .tabs a[aria-selected="true"] { color: var(--paper); border-color: var(--red); }
+.admin .chips-row { margin-bottom: 16px; }
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); }
+.table-wrap table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+.table-wrap th, .table-wrap td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.table-wrap th { color: var(--gray); font-weight: 500; white-space: nowrap; }
+.pager { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; color: var(--gray); }
+.pager a { color: var(--paper); }

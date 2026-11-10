@@ -2,6 +2,7 @@ import { createRemoteJWKSet, jwtVerify } from "jose";
 import { NextRequest, NextResponse } from "next/server";
 import { connect } from "@/lib/db";
 import { env } from "@/lib/env";
+import { TeamModel } from "@/lib/models/Team";
 import { UserModel } from "@/lib/models/User";
 import { cookieBase, createSession, SESSION_COOKIE, SESSION_DAYS } from "@/lib/session";
 
@@ -72,7 +73,12 @@ export async function GET(req: NextRequest) {
       { upsert: true, returnDocument: "after", setDefaultsOnInsert: true },
     );
 
-    const res = NextResponse.redirect(new URL("/perfil", req.url), 303);
+    await TeamModel.updateOne(
+      { "members.user": user._id },
+      { $set: { "members.$.name": user.name, "members.$.email": user.email } },
+    );
+
+    const res = NextResponse.redirect(new URL(user.access === "admin" ? "/panel" : "/perfil", req.url), 303);
     res.cookies.set(SESSION_COOKIE, await createSession(String(user._id)), {
       ...cookieBase,
       path: "/",

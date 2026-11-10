@@ -51,6 +51,21 @@ export async function saveProfile(p: Partial<Profile>): Promise<boolean> {
   return true;
 }
 
+/** Registra la wallet conectada si el perfil la tiene vacía. No pisa una existente. */
+export async function registerWallet(address: string) {
+  const r = await fetch("/api/me/wallet", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ address }),
+  });
+  if (!r.ok) return;
+  const { wallet, registered } = (await r.json()) as { wallet: string; registered: boolean };
+  if (registered && state) {
+    state = { ...state, profile: { ...state.profile, wallet } };
+    emit();
+  }
+}
+
 export async function logout() {
   await fetch("/api/auth/logout", { method: "POST" });
   state = null;
