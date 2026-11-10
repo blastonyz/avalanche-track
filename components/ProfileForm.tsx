@@ -2,25 +2,22 @@
 
 import { useEffect, useState } from "react";
 import { CATEGORIES } from "@/lib/data";
-import { ROLES } from "@/lib/guide";
+import { ROLES, SKILLS } from "@/lib/guide";
 import { getEth } from "@/lib/wallet";
 import {
-  clearUser,
+  deleteAccount,
   EMPTY_PROFILE,
+  logout,
   OPEN_AUTH_EVT,
-  saveUser,
+  saveProfile,
   useUser,
-  type CategoryId,
-  type Profile,
-  type RoleId,
 } from "@/lib/user";
-
-const SKILLS = ["Solidity", "Frontend", "UI y diseño", "Datos y APIs", "Pitch", "Investigación", "DevOps", "IA"];
+import type { CategoryId, Profile, RoleId } from "@/lib/types";
 
 export default function ProfileForm() {
   const user = useUser();
   const [p, setP] = useState<Profile>(EMPTY_PROFILE);
-  const [saved, setSaved] = useState(false);
+  const [saved, setSaved] = useState<"" | "ok" | "error">("");
   const [loaded, setLoaded] = useState<string | null>(null);
 
   useEffect(() => {
@@ -46,7 +43,7 @@ export default function ProfileForm() {
 
   const set = <K extends keyof Profile>(k: K, v: Profile[K]) => {
     setP((x) => ({ ...x, [k]: v }));
-    setSaved(false);
+    setSaved("");
   };
   const toggle = (s: string) =>
     set("skills", p.skills.includes(s) ? p.skills.filter((x) => x !== s) : [...p.skills, s]);
@@ -62,11 +59,15 @@ export default function ProfileForm() {
     }
   }
 
-  function save(e: React.FormEvent) {
+  async function save(e: React.FormEvent) {
     e.preventDefault();
-    if (!user) return;
-    saveUser({ ...user, profile: p });
-    setSaved(true);
+    setSaved((await saveProfile(p)) ? "ok" : "error");
+  }
+
+  async function remove() {
+    if (window.confirm("¿Borrar tu cuenta y tus datos? No se puede deshacer.")) {
+      await deleteAccount();
+    }
   }
 
   function exportJson() {
@@ -91,10 +92,13 @@ export default function ProfileForm() {
         )}
         <h2>{user.name}</h2>
         <p>{user.email}</p>
-        <span className="chip">{user.provider === "google" ? "Google" : "Modo demo"}</span>
+        <span className="chip">Google</span>
         <small>Miembro desde {new Date(user.createdAt).toLocaleDateString("es-AR")}</small>
-        <button type="button" className="btn btn--ghost btn--small" onClick={clearUser}>
+        <button type="button" className="btn btn--ghost btn--small" onClick={logout}>
           Cerrar sesión
+        </button>
+        <button type="button" className="link-danger" onClick={remove}>
+          Borrar mi cuenta
         </button>
       </aside>
 
@@ -166,12 +170,11 @@ export default function ProfileForm() {
         <div className="profile-actions">
           <button className="btn" type="submit">Guardar</button>
           <button type="button" className="btn btn--ghost" onClick={exportJson}>Exportar JSON</button>
-          <span role="status" className="saved">{saved ? "Guardado" : ""}</span>
+          <span role="status" className="saved">
+            {saved === "ok" ? "Guardado" : saved === "error" ? "No se pudo guardar. Revisá wallet y GitHub." : ""}
+          </span>
         </div>
-        <p className="fineprint">
-          Por ahora los datos viven solo en este navegador. Cuando esté la base de datos se van a
-          sincronizar con tu cuenta.
-        </p>
+
       </div>
     </form>
   );

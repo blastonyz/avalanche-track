@@ -1,136 +1,67 @@
 "use client";
 
-import { useMemo, useSyncExternalStore } from "react";
+import { useSyncExternalStore } from "react";
+import type { Profile, User } from "./types";
 
-/**
- * Modelo de usuario simple. Hoy vive en localStorage del navegador.
- * Cuando haya DB y API: reemplazar loadRaw/saveUser/clearUser por llamadas al backend
- * y verificar el token de Google en el servidor (acá solo se decodifica, no se verifica).
- */
-
-export type Provider = "google" | "demo";
-export type CategoryId = "geoespacial" | "rwa" | "agentes" | "libre";
-export type RoleId = "frontend" | "ui" | "contratos" | "pitch" | "mercado";
-
-export type Profile = {
-  team: string;
-  role: RoleId | "";
-  category: CategoryId | "";
-  skills: string[];
-  github: string;
-  wallet: string;
-  bio: string;
-};
-
-export type User = {
-  id: string; // "google:<sub>" o "demo:<uuid>"
-  provider: Provider;
-  name: string;
-  email: string;
-  picture?: string;
-  createdAt: string;
-  updatedAt: string;
-  profile: Profile;
-};
-
-export const EMPTY_PROFILE: Profile = {
-  team: "",
-  role: "",
-  category: "",
-  skills: [],
-  github: "",
-  wallet: "",
-  bio: "",
-};
-
-const KEY = "avax-track:user";
-const EVT = "avax-track:user-changed";
+export type { Profile, User } from "./types";
+export { EMPTY_PROFILE } from "./types";
 export const OPEN_AUTH_EVT = "avax-track:open-auth";
 
-function loadRaw(): string | null {
-  try {
-    return localStorage.getItem(KEY);
-  } catch {
-    return null;
-  }
-}
+/** Estado del usuario. undefined = cargando, null = sin sesión. La sesión vive en una cookie httpOnly. */
+let state: User | null | undefined = undefined;
+let inflight = false;
+const listeners = new Set<() => void>();
+const emit = () => listeners.forEach((l) => l());
 
-function emit() {
-  window.dispatchEvent(new Event(EVT));
-}
-
-export function saveUser(u: User) {
+export async function refreshUser() {
   try {
-    localStorage.setItem(KEY, JSON.stringify({ ...u, updatedAt: new Date().toISOString() }));
+    const r = await fetch("/api/me", { cache: "no-store" });
+    state = r.ok ? ((await r.json()) as User) : null;
   } catch {
-    /* sin storage: la sesión dura hasta recargar */
+    state = null;
   }
+  inflight = false;
   emit();
-}
-
-export function clearUser() {
-  try {
-    localStorage.removeItem(KEY);
-  } catch {
-    /* nada */
-  }
-  emit();
-}
-
-export function newUser(base: Pick<User, "provider" | "name" | "email" | "picture"> & { sub?: string }): User {
-  const now = new Date().toISOString();
-  const id =
-    base.provider === "google" && base.sub
-      ? `google:${base.sub}`
-      : `demo:${crypto.randomUUID()}`;
-  return {
-    id,
-    provider: base.provider,
-    name: base.name,
-    email: base.email,
-    picture: base.picture,
-    createdAt: now,
-    updatedAt: now,
-    profile: { ...EMPTY_PROFILE },
-  };
 }
 
 function subscribe(cb: () => void) {
-  window.addEventListener(EVT, cb);
-  window.addEventListener("storage", cb);
+  listeners.add(cb);
+  if (state === undefined && !inflight) {
+    inflight = true;
+    void refreshUser();
+  }
   return () => {
-    window.removeEventListener(EVT, cb);
-    window.removeEventListener("storage", cb);
+    listeners.delete(cb);
   };
 }
 
-/** undefined = todavía no se leyó (SSR); null = sin sesión */
 export function useUser(): User | null | undefined {
-  const raw = useSyncExternalStore(subscribe, loadRaw, () => undefined);
-  return useMemo(() => {
-    if (raw === undefined) return undefined;
-    if (!raw) return null;
-    try {
-      const u = JSON.parse(raw) as User;
-      return { ...u, profile: { ...EMPTY_PROFILE, ...u.profile } };
-    } catch {
-      return null;
-    }
-  }, [raw]);
+  return useSyncExternalStore(subscribe, () => state, () => undefined);
 }
 
-/** Decodifica el payload de un ID token de Google. NO verifica la firma. */
-export function decodeJwt(token: string): Record<string, string> | null {
-  try {
-    const part = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
-    const json = decodeURIComponent(
-      atob(part)
-        .split("")
-        .map((c) => "%" + c.charCodeAt(0).toString(16).padStart(2, "0"))
-        .join(""),
-    );
-    return JSON.parse(json);
-  } catch {
-    return null;
+export async function saveProfile(p: Partial<Profile>): Promise<boolean> {
+  const r = await fetch("/api/me", {
+    method: "PATCH",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(p),
+  });
+  if (!r.ok) return false;
+  state = (await r.json()) as User;
+  emit();
+  return true;
+}
+
+export async function logout() {
+  await fetch("/api/auth/logout", { method: "POST" });
+  state = null;
+  emit();
+}
+
+export async function deleteAccount() {
+  const r = await fetch("/api/me", { method: "DELETE" });
+  if (r.ok) {
+    state = null;
+    emit();
   }
+  return r.ok;
 }

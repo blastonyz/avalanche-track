@@ -3059,3 +3059,21 @@ button.chip[aria-pressed="true"] {
     grid-template-columns: 1fr;
   }
 }
+
+.link-danger {
+  background: none;
+  border: 0;
+  padding: 0;
+  margin-top: 6px;
+  font: inherit;
+  font-size: 0.8125rem;
+  color: var(--gray);
+  text-decoration: underline;
+  cursor: pointer;
+}
+.link-danger:hover {
+  color: var(--red-hot);
+}
+a.g-btn {
+  text-decoration: none;
+}

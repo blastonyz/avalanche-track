@@ -1,15 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
-import { decodeJwt, newUser, OPEN_AUTH_EVT, saveUser, useUser } from "@/lib/user";
-
-const CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ?? "";
-
-type GoogleId = {
-  initialize: (o: { client_id: string; callback: (r: { credential: string }) => void }) => void;
-  renderButton: (el: HTMLElement, o: Record<string, unknown>) => void;
-};
+import { useEffect, useState } from "react";
+import { OPEN_AUTH_EVT, useUser } from "@/lib/user";
 
 function GoogleG() {
   return (
@@ -22,13 +15,12 @@ function GoogleG() {
   );
 }
 
-function Modal({ onClose }: { onClose: () => void }) {
-  const gRef = useRef<HTMLDivElement>(null);
-  const [demo, setDemo] = useState(false);
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [err, setErr] = useState("");
+const ERRORS: Record<string, string> = {
+  error: "No pudimos iniciar sesión. Probá de nuevo.",
+  config: "El login todavía no está configurado en el servidor.",
+};
 
+function Modal({ onClose, error }: { onClose: () => void; error: string }) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
     document.addEventListener("keydown", onKey);
@@ -40,53 +32,6 @@ function Modal({ onClose }: { onClose: () => void }) {
     };
   }, [onClose]);
 
-  // Con Client ID configurado se usa el botón oficial de Google Identity Services
-  useEffect(() => {
-    if (!CLIENT_ID) return;
-    const init = () => {
-      const g = (window as unknown as { google?: { accounts: { id: GoogleId } } }).google;
-      if (!g || !gRef.current) return;
-      g.accounts.id.initialize({
-        client_id: CLIENT_ID,
-        callback: ({ credential }) => {
-          const p = decodeJwt(credential);
-          if (!p?.email) return setErr("Google no devolvió un email válido.");
-          saveUser(
-            newUser({
-              provider: "google",
-              sub: p.sub,
-              name: p.name ?? p.email,
-              email: p.email,
-              picture: p.picture,
-            }),
-          );
-          onClose();
-        },
-      });
-      g.accounts.id.renderButton(gRef.current, {
-        theme: "filled_black",
-        size: "large",
-        text: "continue_with",
-        shape: "rectangular",
-        width: 320,
-      });
-    };
-    if ((window as unknown as { google?: unknown }).google) return init();
-    const s = document.createElement("script");
-    s.src = "https://accounts.google.com/gsi/client";
-    s.async = true;
-    s.onload = init;
-    s.onerror = () => setErr("No se pudo cargar Google. Revisá tu conexión.");
-    document.head.appendChild(s);
-  }, [onClose]);
-
-  function submitDemo(e: React.FormEvent) {
-    e.preventDefault();
-    if (!name.trim() || !/^\S+@\S+\.\S+$/.test(email)) return setErr("Poné un nombre y un email válido.");
-    saveUser(newUser({ provider: "demo", name: name.trim(), email: email.trim() }));
-    onClose();
-  }
-
   return (
     <div className="modal-back" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <div className="modal" role="dialog" aria-modal="true" aria-labelledby="auth-t">
@@ -95,41 +40,18 @@ function Modal({ onClose }: { onClose: () => void }) {
         </button>
         <span className="eyebrow">Registro</span>
         <h2 id="auth-t">Creá tu perfil</h2>
-        <p>Guardá tu equipo, rol y categoría para armar el track. Es gratis y tarda 10 segundos.</p>
-
-        {CLIENT_ID ? (
-          <div ref={gRef} className="g-slot" />
-        ) : (
-          <button className="g-btn" onClick={() => setDemo(true)}>
-            <GoogleG />
-            Continuar con Google
-          </button>
-        )}
-
-        {!CLIENT_ID && (
-          <p className="modal-note">
-            Google todavía no está configurado (falta <code>NEXT_PUBLIC_GOOGLE_CLIENT_ID</code>).
-            Mientras tanto podés entrar en modo demo: los datos se guardan solo en este navegador.
+        <p>Guardá tu equipo, rol y categoría. Gratis, con tu cuenta de Google.</p>
+        {/* Navegación completa: el flujo OAuth sale a Google y vuelve a /callback */}
+        <a className="g-btn" href="/api/auth/google">
+          <GoogleG />
+          Continuar con Google
+        </a>
+        {error && (
+          <p className="modal-err" role="alert">
+            {error}
           </p>
         )}
-
-        {!CLIENT_ID && demo && (
-          <form className="modal-form" onSubmit={submitDemo}>
-            <label>
-              Nombre
-              <input value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" autoFocus />
-            </label>
-            <label>
-              Email
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" />
-            </label>
-            <button className="btn" type="submit">
-              Entrar en modo demo
-            </button>
-          </form>
-        )}
-
-        {err && <p className="modal-err" role="alert">{err}</p>}
+        <p className="modal-note">Solo pedimos tu nombre, email y foto.</p>
       </div>
     </div>
   );
@@ -138,10 +60,17 @@ function Modal({ onClose }: { onClose: () => void }) {
 export default function AuthButton() {
   const user = useUser();
   const [open, setOpen] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const on = () => setOpen(true);
     window.addEventListener(OPEN_AUTH_EVT, on);
+    const q = new URLSearchParams(window.location.search).get("auth");
+    if (q && ERRORS[q]) {
+      setError(ERRORS[q]);
+      setOpen(true);
+      history.replaceState(null, "", window.location.pathname);
+    }
     return () => window.removeEventListener(OPEN_AUTH_EVT, on);
   }, []);
 
@@ -164,7 +93,7 @@ export default function AuthButton() {
       <button className="reg-btn" onClick={() => setOpen(true)}>
         Registrarse
       </button>
-      {open && <Modal onClose={() => setOpen(false)} />}
+      {open && <Modal error={error} onClose={() => setOpen(false)} />}
     </>
   );
 }

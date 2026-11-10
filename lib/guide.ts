@@ -205,3 +205,5 @@ Atacala sin piedad:
 5) ¿Se puede construir en 2 días?
 6) ¿Qué haría que un jurado la descarte?
 Dame las 3 objeciones más fuertes, con nota de 1 a 10, y cómo corregir la idea.`;
+
+export const SKILLS = ["Solidity", "Frontend", "UI y diseño", "Datos y APIs", "Pitch", "Investigación", "DevOps", "IA"];

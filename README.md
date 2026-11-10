@@ -28,7 +28,9 @@ npm run build    # verificación de producción
 
 ## MongoDB
 
-No hace falta para este sitio. Si se suma (por ejemplo para guardar proyectos por equipo), agregar una ruta `app/api/` y `MONGODB_URI` en `.env.local`.
+Base `builders`, colección `users` (modelo en `lib/models/User.ts`). Variables: `MONGO_URI` y `MONGO_DB=builders`.
+En Atlas: Database Access > usuario con rol `readWrite` solo sobre `builders`; Network Access > `0.0.0.0/0`
+(Vercel no tiene IP fija). Si la clave tiene caracteres raros, codificala (`@` -> `%40`).
 
 ## Versiones fijas (seguridad)
 
@@ -38,10 +40,16 @@ también queden exactas. Antes de entregar: `npm audit`.
 
 ## Deploy en Vercel y login con Google
 
-1. Subí el repo a GitHub e importalo en Vercel (framework: Next.js, sin configuración extra).
-2. En Google Cloud Console: APIs y servicios > Credenciales > ID de cliente de OAuth > Aplicación web.
-   - **Orígenes autorizados de JavaScript:** `https://<tu-proyecto>.vercel.app` (y el dominio propio si lo hay; `http://localhost:3000` para desarrollo).
-   - No hace falta URI de redireccionamiento: se usa Google Identity Services (botón de ID token).
-3. En Vercel > Settings > Environment Variables: `NEXT_PUBLIC_GOOGLE_CLIENT_ID=<client id>` (Production y Preview) y redeploy.
-4. Los previews de Vercel tienen una URL distinta por deploy: Google solo acepta orígenes registrados, así que el login va a andar en el dominio fijo de producción.
-5. Seguridad: hoy el token de Google solo se decodifica en el navegador (no se verifica la firma). Antes de guardar datos reales, verificalo en el servidor (`google-auth-library`, `verifyIdToken`).
+Flujo OAuth en el servidor (código + PKCE + state + nonce). El id_token se verifica con la clave pública
+de Google y la sesión es una cookie httpOnly firmada.
+
+1. Subí el repo a GitHub e importalo en Vercel.
+2. Google Cloud Console > Credenciales > ID de cliente OAuth > Aplicación web > **URIs de redireccionamiento autorizados**:
+   - `https://avalanche-track.vercel.app/callback`
+   - `http://localhost:3000/callback` (desarrollo)
+3. Pantalla de consentimiento: publicala (o agregá los emails de prueba) o solo entrarán usuarios de test.
+4. Vercel > Settings > Environment Variables (Production): `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `CALLBACK_URL`,
+   `MONGO_URI`, `MONGO_DB`, `SESSION_SECRET`. Redeploy.
+   - `SESSION_SECRET`: `node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"`
+5. Local: copiá `.env.example` a `.env.local` y completalo. Nunca subas secretos al repo.
+6. Los previews de Vercel tienen otra URL y Google no la acepta: el login anda en el dominio de producción.
