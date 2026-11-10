@@ -15,7 +15,7 @@ const oid = (v: unknown) => new Types.ObjectId(String(v));
  */
 async function claim(userId: unknown, teamId: Types.ObjectId) {
   const r = await UserModel.updateOne(
-    { _id: oid(userId), access: "user", haveTeam: false },
+    { _id: oid(userId), access: { $ne: "admin" }, haveTeam: false },
     { $set: { haveTeam: true, team: teamId } },
   );
   if (!r.modifiedCount) throw new AppError("ya-tenes-equipo", 409);

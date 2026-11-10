@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { AppError, json, run } from "@/lib/api";
 import { requireUser } from "@/lib/auth";
 import { SKILLS } from "@/lib/guide";
-import { ROLE_IDS } from "@/lib/models/User";
+import { ROLE_IDS, UserModel } from "@/lib/models/User";
 import { leaveTeam } from "@/lib/team";
 import type { User } from "@/lib/types";
 
@@ -37,28 +37,30 @@ export const PATCH = (req: NextRequest) =>
     const b = (await req.json()) as Record<string, unknown>;
     const str = (v: unknown, max: number) => (typeof v === "string" ? v.trim().slice(0, max) : "");
 
-    if ("bio" in b) u.bio = str(b.bio, 500);
+    const set: Record<string, unknown> = {};
+    if ("bio" in b) set.bio = str(b.bio, 500);
     if ("github" in b) {
       const v = str(b.github, 39);
       if (!/^[A-Za-z0-9](?:[A-Za-z0-9-]*)$/.test(v)) throw new AppError("github"); // obligatorio
-      u.github = v;
+      set.github = v;
     }
     if ("wallet" in b) {
       const v = str(b.wallet, 42);
       if (!/^(0x[a-fA-F0-9]{40})?$/.test(v)) throw new AppError("wallet");
-      u.wallet = v;
+      set.wallet = v;
     }
     if ("role" in b) {
       const v = str(b.role, 20);
       if (v && !ROLE_IDS.includes(v)) throw new AppError("role");
-      u.role = v;
+      set.role = v;
     }
     if ("skills" in b && Array.isArray(b.skills)) {
-      u.skills = [...new Set(b.skills.filter((s): s is string => typeof s === "string" && SKILLS.includes(s)))].slice(0, 8);
+      set.skills = [...new Set(b.skills.filter((s): s is string => typeof s === "string" && SKILLS.includes(s)))].slice(0, 8);
     }
 
-    await u.save();
-    return json(serialize(u));
+    // $set puntual: no revalida el documento entero, así un campo viejo no bloquea el guardado.
+    const updated = await UserModel.findByIdAndUpdate(u._id, { $set: set }, { returnDocument: "after", runValidators: true });
+    return json(serialize(updated ?? u));
   });
 
 /** Borra la cuenta: primero sale del equipo para no dejar equipos huérfanos. */

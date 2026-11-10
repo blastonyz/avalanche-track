@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Types } from "mongoose";
 import { notFound } from "next/navigation";
 import PageHead from "@/components/PageHead";
 import { getUser, roleOf } from "@/lib/auth";
@@ -57,8 +58,8 @@ export default async function AdminSlot({ searchParams }: { searchParams: Promis
   const opts = { page, limit: PAGE_SIZE, lean: true };
 
   const [nBuilders, nWithTeam, nTeams, nDone] = await Promise.all([
-    UserModel.countDocuments({ access: "user" }),
-    UserModel.countDocuments({ access: "user", haveTeam: true }),
+    UserModel.countDocuments({ access: { $ne: "admin" } }),
+    UserModel.countDocuments({ access: { $ne: "admin" }, haveTeam: true }),
     TeamModel.countDocuments(),
     ProjectModel.countDocuments({ completed: true }),
   ]);
@@ -67,9 +68,11 @@ export default async function AdminSlot({ searchParams }: { searchParams: Promis
   let meta: { page?: number; totalPages?: number; totalDocs: number } = { totalDocs: 0 };
 
   if (tab === "builders") {
-    const q = { access: "user", ...(f === "sin-equipo" ? { haveTeam: false } : f === "con-equipo" ? { haveTeam: true } : {}) };
-    const r = await UserModel.paginate(q, { ...opts, sort: { createdAt: -1 }, populate: { path: "team", select: "name" } });
+    const q = { access: { $ne: "admin" }, ...(f === "sin-equipo" ? { haveTeam: false } : f === "con-equipo" ? { haveTeam: true } : {}) };
+    const r = await UserModel.paginate(q, { ...opts, sort: { createdAt: -1 } });
     meta = r;
+    const teamIds = r.docs.map((u) => String(u.team ?? "")).filter((id) => Types.ObjectId.isValid(id));
+    const names = new Map((await TeamModel.find({ _id: { $in: teamIds } }).select("name").lean()).map((t) => [String(t._id), t.name]));
     body = (
       <table>
         <thead><tr><th>Nombre</th><th>Email</th><th>Rol</th><th>GitHub</th><th>Equipo</th></tr></thead>
@@ -80,7 +83,7 @@ export default async function AdminSlot({ searchParams }: { searchParams: Promis
               <td>{u.email}</td>
               <td>{u.role || "—"}</td>
               <td>{u.github || "—"}</td>
-              <td>{u.haveTeam ? ((u.team as unknown as { name?: string } | null)?.name || "(sin nombre)") : "—"}</td>
+              <td>{u.haveTeam ? names.get(String(u.team ?? "")) || "(sin nombre)" : "—"}</td>
             </tr>
           ))}
         </tbody>
