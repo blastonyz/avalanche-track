@@ -399,7 +399,7 @@ export const ORACLE_OPTIONS = [
   { name: "Varios relayers", body: "Varios publican su lectura y el contrato compara (mediana o quórum)." },
   { name: "Chainlink Functions", body: "La red Chainlink ejecuta JS que consulta la API. Pide una subscription con LINK de testnet: probalo antes." },
   { name: "Commit de hash", body: "Guardás solo el hash del dato más fecha y fuente. Barato y muy demostrable." },
-  { name: "L1 con validadores", body: "Los validadores son los proveedores de datos. Solo si explicás qué ganás frente a C-Chain." },
+  { name: "L1 con validadores", body: "Los validadores son los proveedores de datos. Una red con reglas y gas propios, hecha para tu caso." },
 ];
 
 export type Step = {
@@ -571,8 +571,8 @@ export const L1_COMPARE = [
   { row: "Validadores", c: "Los de la red principal", l1: "Los tuyos, por ejemplo los proveedores de datos" },
   { row: "Gas", c: "AVAX", l1: "Token propio, si lo necesitás" },
   { row: "Reglas", c: "Las de la C-Chain", l1: "Personalizadas" },
-  { row: "Trabajo y riesgo", c: "Poco: desplegás y listo", l1: "Más trabajo y más puntos de falla" },
-  { row: "Ejemplo", c: "Promediar datos de varias fuentes", l1: "Red de sensores con whitelist" },
+  { row: "Despliegue", c: "Desplegás y listo", l1: "Unos pasos guiados en la consola de Builder Hub" },
+  { row: "Ejemplo", c: "Promediar datos de varias fuentes", l1: "Red de sensores con allowlist y gas propio" },
 ];
 
 export const L1_PREFLIGHT = [

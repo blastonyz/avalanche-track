@@ -37,11 +37,11 @@ function Pager({ tab, f, page, pages }: { tab: string; f: string; page: number; 
   if (pages <= 1) return null; // paginación condicional: solo si hace falta
   return (
     <nav className="pager" aria-label="Paginación">
-      {page > 1 ? <Link href={href(tab, page - 1, f)}>← Anterior</Link> : <span />}
+      {page > 1 ? <Link href={href(tab, page - 1, f)} scroll={false}>← Anterior</Link> : <span />}
       <span>
         {page} / {pages}
       </span>
-      {page < pages ? <Link href={href(tab, page + 1, f)}>Siguiente →</Link> : <span />}
+      {page < pages ? <Link href={href(tab, page + 1, f)} scroll={false}>Siguiente →</Link> : <span />}
     </nav>
   );
 }
@@ -146,15 +146,26 @@ export default async function AdminSlot({ searchParams }: { searchParams: Promis
 
         <div className="tabs" role="tablist">
           {TABS.map(([t, label]) => (
-            <Link key={t} href={href(t)} role="tab" aria-selected={t === tab}>{label}</Link>
+            <Link key={t} href={href(t)} scroll={false} role="tab" aria-selected={t === tab}>{label}</Link>
           ))}
         </div>
         {FILTERS[tab].length > 0 && (
           <div className="chips-row">
             {FILTERS[tab].map(([k, label]) => (
-              <Link key={k} href={href(tab, 1, k)} className="chip chip--toggle" aria-pressed={k === f}>{label}</Link>
+              <Link key={k} href={href(tab, 1, k)} scroll={false} className="chip chip--toggle" aria-pressed={k === f}>{label}</Link>
             ))}
           </div>
+        )}
+
+        {tab === "proyectos" && (
+          <p className="export-row">
+            <a className="btn btn--small" href={`/api/admin/export${f ? `?f=${f}` : ""}`} download>
+              Descargar JSON ({meta.totalDocs})
+            </a>
+            <a className="btn btn--ghost btn--small" href={`/api/admin/export?format=ndjson${f ? `&f=${f}` : ""}`} download>
+              NDJSON
+            </a>
+          </p>
         )}
 
         {meta.totalDocs === 0 ? <p className="lead">No hay resultados.</p> : <div className="table-wrap">{body}</div>}

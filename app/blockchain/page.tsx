@@ -235,10 +235,10 @@ export default function Blockchain() {
         <div className="shell">
           <div className="section-head">
             <span className="eyebrow">L1 propia</span>
-            <h2 className="h-section">C-Chain o L1</h2>
+            <h2 className="h-section">Tu propia L1</h2>
             <p className="lead">
-              Una L1 es más trabajo y más puntos de falla. Elegila solo si podés explicar qué ganás
-              que no tendrías en la C-Chain.
+              En este track una L1 dedicada tiene sentido: validadores, gas y reglas a medida de tu
+              caso. Y desplegarla desde la consola de Builder Hub es simple.
             </p>
           </div>
 
@@ -248,7 +248,7 @@ export default function Blockchain() {
                 <tr>
                   <th scope="col"></th>
                   <th scope="col">Contrato en C-Chain</th>
-                  <th scope="col">L1 propia</th>
+                  <th scope="col">L1 dedicada</th>
                 </tr>
               </thead>
               <tbody>
@@ -265,15 +265,14 @@ export default function Blockchain() {
 
           <div className="preflight">
             <div>
-              <span className="eyebrow">Antes de elegir la L1</span>
+              <span className="eyebrow">Tu L1 en pocos pasos</span>
               <h3 className="h-sub" style={{ margin: "14px 0 12px" }}>
-                Probá el flujo completo una vez
+                Creala y desplegala desde la consola
               </h3>
               <p>
-                Los nodos de prueba que hostea Builder Hub son gratis, pero se apagan a los 3 días:
-                alcanzan para el hackatón, no para después. Si el flujo no te sale entero antes de
-                empezar a construir, quedate en la C-Chain. La red local de Avalanche CLI es la
-                opción más estable.
+                Los nodos de prueba que hostea Builder Hub son gratis y se apagan a los 3 días:
+                alcanzan para el hackatón. Para seguir después, la red local de Avalanche CLI es la
+                opción más estable. Recorré el flujo completo una vez antes de empezar a construir.
               </p>
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 24 }}>
                 <a className="btn" href={REFERRAL_URL} target="_blank" rel="noopener noreferrer">

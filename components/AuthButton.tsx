@@ -79,7 +79,7 @@ export default function AuthButton() {
 
   if (user) {
     return (
-      <Link href="/perfil" className="user-chip" title="Tu perfil">
+      <Link href={user.access === "admin" ? "/panel" : "/perfil"} className="user-chip" title={user.access === "admin" ? "Panel admin" : "Tu perfil"}>
         {user.picture ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={user.picture} alt="" width={26} height={26} referrerPolicy="no-referrer" />

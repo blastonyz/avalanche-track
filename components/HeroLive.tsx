@@ -329,9 +329,8 @@ export default function HeroLive() {
 
       <div className="pipe">
         <div>
-          <span className="pipe-n">Paso 1</span>
-          <h3>El dato</h3>
-          <p>Una lectura real del espacio, con fecha y fuente.</p>
+          <span className="pipe-n">1</span>
+          <h3>Dato</h3>
           <code>
             {fix
               ? `iss25544|${fix.ts}|${fix.lat.toFixed(4)}|${fix.lon.toFixed(4)}`
@@ -339,21 +338,17 @@ export default function HeroLive() {
           </code>
         </div>
         <div>
-          <span className="pipe-n">Paso 2</span>
-          <h3>La huella</h3>
-          <p>SHA-256 del dato, calculado en tu navegador.</p>
+          <span className="pipe-n">2</span>
+          <h3>Huella SHA-256</h3>
           <code>{short}</code>
-          {hash && <CopyButton text={`0x${hash}`} label="Copiar huella completa" />}
+          {hash && <CopyButton text={`0x${hash}`} label="Copiar huella" />}
         </div>
         <div>
-          <span className="pipe-n">Paso 3</span>
-          <h3>El contrato</h3>
-          <p>
-            Un contrato en Fuji guardaría solo la huella, la hora y la fuente. Acá no se envía nada
-            a la cadena: es la demostración del patrón.
-          </p>
+          <span className="pipe-n">3</span>
+          <h3>Contrato</h3>
+          <p>Guarda solo la huella. Demo: no se envía nada.</p>
           <Link className="btn btn--ghost btn--small" href="/blockchain#oraculo">
-            Cómo se lleva un dato a la cadena
+            Cómo llevarlo a Fuji
           </Link>
         </div>
       </div>

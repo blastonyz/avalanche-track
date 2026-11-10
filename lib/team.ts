@@ -30,13 +30,22 @@ export async function createTeam(user: U, name: string) {
   const teamId = new Types.ObjectId();
   await claim(user._id, teamId);
   try {
-    return await TeamModel.create({
-      _id: teamId,
-      name,
-      code: newCode(),
-      owner: oid(user._id),
-      members: [{ user: oid(user._id), email: user.email, name: user.name ?? "" }],
-    });
+    // El código es único (índice). Si justo chocara con otro, se genera uno nuevo y se reintenta.
+    for (let i = 0; ; i++) {
+      try {
+        return await TeamModel.create({
+          _id: teamId,
+          name,
+          code: newCode(),
+          owner: oid(user._id),
+          members: [{ user: oid(user._id), email: user.email, name: user.name ?? "" }],
+        });
+      } catch (e) {
+        const dup = e as { code?: number; keyPattern?: Record<string, unknown> };
+        if (dup.code === 11000 && dup.keyPattern?.code && i < 4) continue;
+        throw e;
+      }
+    }
   } catch (e) {
     await release(user._id);
     throw e;
