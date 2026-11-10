@@ -1,15 +1,15 @@
 import { cache } from "react";
-import { cookies } from "next/headers";
+import { getServerSession } from "next-auth";
 import { Types } from "mongoose";
 import { AppError } from "./api";
 import { connect } from "./db";
 import { UserModel } from "./models/User";
-import { readSession, SESSION_COOKIE } from "./session";
+import { authOptions } from "./auth-options";
 
 /** Usuario de la sesión (una consulta por request). null si no hay sesión o algo falla. */
 export const getUser = cache(async () => {
   try {
-    const id = await readSession((await cookies()).get(SESSION_COOKIE)?.value);
+    const id = (await getServerSession(authOptions))?.user?.id;
     if (!id || !Types.ObjectId.isValid(id)) return null;
     await connect();
     return await UserModel.findById(id);

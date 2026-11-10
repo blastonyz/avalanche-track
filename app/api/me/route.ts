@@ -1,10 +1,8 @@
 import { NextRequest } from "next/server";
-import { cookies } from "next/headers";
 import { AppError, json, run } from "@/lib/api";
 import { requireUser } from "@/lib/auth";
 import { SKILLS } from "@/lib/guide";
-import { CATEGORY_IDS, ROLE_IDS } from "@/lib/models/User";
-import { cookieBase, SESSION_COOKIE } from "@/lib/session";
+import { ROLE_IDS } from "@/lib/models/User";
 import { leaveTeam } from "@/lib/team";
 import type { User } from "@/lib/types";
 
@@ -23,7 +21,6 @@ function serialize(u: Doc): User {
     createdAt: (u.createdAt ?? new Date()).toISOString(),
     profile: {
       role: (u.role ?? "") as User["profile"]["role"],
-      category: (u.category ?? "") as User["profile"]["category"],
       skills: u.skills ?? [],
       github: u.github ?? "",
       wallet: u.wallet ?? "",
@@ -43,7 +40,7 @@ export const PATCH = (req: NextRequest) =>
     if ("bio" in b) u.bio = str(b.bio, 500);
     if ("github" in b) {
       const v = str(b.github, 39);
-      if (!/^[A-Za-z0-9-]*$/.test(v)) throw new AppError("github");
+      if (!/^[A-Za-z0-9](?:[A-Za-z0-9-]*)$/.test(v)) throw new AppError("github"); // obligatorio
       u.github = v;
     }
     if ("wallet" in b) {
@@ -55,11 +52,6 @@ export const PATCH = (req: NextRequest) =>
       const v = str(b.role, 20);
       if (v && !ROLE_IDS.includes(v)) throw new AppError("role");
       u.role = v;
-    }
-    if ("category" in b) {
-      const v = str(b.category, 20);
-      if (v && !CATEGORY_IDS.includes(v)) throw new AppError("category");
-      u.category = v;
     }
     if ("skills" in b && Array.isArray(b.skills)) {
       u.skills = [...new Set(b.skills.filter((s): s is string => typeof s === "string" && SKILLS.includes(s)))].slice(0, 8);
@@ -75,7 +67,5 @@ export const DELETE = (req: NextRequest) =>
     const u = await requireUser();
     await leaveTeam(u._id);
     await u.deleteOne();
-    const res = json({ ok: true });
-    (await cookies()).set(SESSION_COOKIE, "", { ...cookieBase, path: "/", maxAge: 0 });
-    return res;
+    return json({ ok: true }); // el cliente cierra la sesión de next-auth después
   });

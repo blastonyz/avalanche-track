@@ -1,5 +1,6 @@
 "use client";
 
+import { signOut } from "next-auth/react";
 import { useSyncExternalStore } from "react";
 import type { Profile, User } from "./types";
 
@@ -67,7 +68,7 @@ export async function registerWallet(address: string) {
 }
 
 export async function logout() {
-  await fetch("/api/auth/logout", { method: "POST" });
+  await signOut({ redirect: false });
   state = null;
   emit();
 }
@@ -75,6 +76,7 @@ export async function logout() {
 export async function deleteAccount() {
   const r = await fetch("/api/me", { method: "DELETE" });
   if (r.ok) {
+    await signOut({ redirect: false });
     state = null;
     emit();
   }

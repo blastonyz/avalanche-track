@@ -47,16 +47,14 @@ también queden exactas. Antes de entregar: `npm audit`.
 
 ## Deploy en Vercel y login con Google
 
-Flujo OAuth en el servidor (código + PKCE + state + nonce). El id_token se verifica con la clave pública
-de Google y la sesión es una cookie httpOnly firmada.
+Login con next-auth v4 (sesión JWT en cookie httpOnly, sin adapter). El usuario y su rol viven en Mongo; el rol se lee en cada request.
 
 1. Subí el repo a GitHub e importalo en Vercel.
 2. Google Cloud Console > Credenciales > ID de cliente OAuth > Aplicación web > **URIs de redireccionamiento autorizados**:
-   - `https://avalanche-track.vercel.app/callback`
-   - `http://localhost:3000/callback` (desarrollo)
-3. Pantalla de consentimiento: publicala (o agregá los emails de prueba) o solo entrarán usuarios de test.
-4. Vercel > Settings > Environment Variables (Production): `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `CALLBACK_URL`,
-   `MONGO_URI`, `MONGO_DB`, `SESSION_SECRET`. Redeploy.
-   - `SESSION_SECRET`: `node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"`
-5. Local: copiá `.env.example` a `.env.local` y completalo. Nunca subas secretos al repo.
+   - `https://avalanche-track.vercel.app/api/auth/callback/google`
+   - `http://localhost:3000/api/auth/callback/google` (desarrollo)
+3. Pantalla de consentimiento: publicala (o agregá los emails de prueba).
+4. Vercel > Settings > Environment Variables (Production): `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `NEXTAUTH_URL=https://avalanche-track.vercel.app`, `NEXTAUTH_SECRET`, `MONGO_URI`, `MONGO_DB`. Redeploy.
+   - `NEXTAUTH_SECRET` (o `SESSION_SECRET`, sirve el mismo): `node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"`
+5. Local: copiá `.env.example` a `.env.local`.
 6. Los previews de Vercel tienen otra URL y Google no la acepta: el login anda en el dominio de producción.

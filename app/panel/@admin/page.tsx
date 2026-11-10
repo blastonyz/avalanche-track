@@ -72,14 +72,14 @@ export default async function AdminSlot({ searchParams }: { searchParams: Promis
     meta = r;
     body = (
       <table>
-        <thead><tr><th>Nombre</th><th>Email</th><th>Rol</th><th>Categoría</th><th>Equipo</th></tr></thead>
+        <thead><tr><th>Nombre</th><th>Email</th><th>Rol</th><th>GitHub</th><th>Equipo</th></tr></thead>
         <tbody>
           {r.docs.map((u) => (
             <tr key={String(u._id)}>
               <td>{u.name}</td>
               <td>{u.email}</td>
               <td>{u.role || "—"}</td>
-              <td>{u.category || "—"}</td>
+              <td>{u.github || "—"}</td>
               <td>{u.haveTeam ? ((u.team as unknown as { name?: string } | null)?.name || "(sin nombre)") : "—"}</td>
             </tr>
           ))}

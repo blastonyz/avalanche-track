@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { CATEGORIES } from "@/lib/data";
 import { ROLES, SKILLS } from "@/lib/guide";
 import { getEth } from "@/lib/wallet";
 import {
@@ -13,7 +12,7 @@ import {
   saveProfile,
   useUser,
 } from "@/lib/user";
-import type { CategoryId, Profile, RoleId } from "@/lib/types";
+import type { Profile, RoleId } from "@/lib/types";
 
 export default function ProfileForm() {
   const user = useUser();
@@ -107,22 +106,13 @@ export default function ProfileForm() {
       </aside>
 
       <div className="profile-fields">
-        <div className="two">
+        <div>
           <label>
             Tu rol
             <select value={p.role} onChange={(e) => set("role", e.target.value as RoleId | "")}>
               <option value="">Sin definir</option>
               {ROLES.map((r) => (
                 <option key={r.id} value={r.id}>{r.name}</option>
-              ))}
-            </select>
-          </label>
-          <label>
-            Categoría
-            <select value={p.category} onChange={(e) => set("category", e.target.value as CategoryId | "")}>
-              <option value="">Sin definir</option>
-              {CATEGORIES.map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
               ))}
             </select>
           </label>
@@ -147,8 +137,16 @@ export default function ProfileForm() {
 
         <div className="two">
           <label>
-            GitHub
-            <input value={p.github} onChange={(e) => set("github", e.target.value)} placeholder="usuario" />
+            GitHub *
+            <input
+              value={p.github}
+              onChange={(e) => set("github", e.target.value)}
+              placeholder="usuario"
+              required
+              maxLength={39}
+              pattern="[A-Za-z0-9][A-Za-z0-9\-]*"
+              title="Solo letras, números y guiones"
+            />
           </label>
           <label>
             Wallet (Fuji)
@@ -170,7 +168,7 @@ export default function ProfileForm() {
           <button className="btn" type="submit">Guardar</button>
           <button type="button" className="btn btn--ghost" onClick={exportJson}>Exportar JSON</button>
           <span role="status" className="saved">
-            {saved === "ok" ? "Guardado" : saved === "error" ? "No se pudo guardar. Revisá wallet y GitHub." : ""}
+            {saved === "ok" ? "Guardado" : saved === "error" ? "No se pudo guardar. Revisá GitHub (obligatorio) y wallet; si sigue, volvé a iniciar sesión." : ""}
           </span>
         </div>
 

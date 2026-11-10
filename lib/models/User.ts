@@ -1,10 +1,8 @@
 import { Schema, model, models, type InferSchemaType, type Model, type PaginateModel } from "mongoose";
 import paginate from "mongoose-paginate-v2";
-import { CATEGORIES } from "../data";
 import { ROLES } from "../guide";
 
 export const ROLE_IDS: string[] = ROLES.map((r) => r.id);
-export const CATEGORY_IDS: string[] = CATEGORIES.map((c) => c.id);
 export const ACCESS = ["user", "admin"] as const;
 
 /** Base: builders · colección: users. */
@@ -23,7 +21,6 @@ const schema = new Schema(
     team: { type: Schema.Types.ObjectId, ref: "Team", default: null },
 
     role: { type: String, enum: [...ROLE_IDS, ""], default: "" },
-    category: { type: String, enum: [...CATEGORY_IDS, ""], default: "" },
     skills: { type: [String], default: [] },
     github: { type: String, default: "", match: /^[A-Za-z0-9-]{0,39}$/ },
     wallet: { type: String, default: "", match: /^(0x[a-fA-F0-9]{40})?$/ },

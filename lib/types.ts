@@ -5,7 +5,6 @@ export type Access = "user" | "admin";
 
 export type Profile = {
   role: RoleId | "";
-  category: CategoryId | "";
   skills: string[];
   github: string;
   wallet: string;
@@ -26,7 +25,6 @@ export type User = {
 
 export const EMPTY_PROFILE: Profile = {
   role: "",
-  category: "",
   skills: [],
   github: "",
   wallet: "",

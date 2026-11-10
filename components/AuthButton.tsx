@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { signIn } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { OPEN_AUTH_EVT, useUser } from "@/lib/user";
 
@@ -18,6 +19,7 @@ function GoogleG() {
 const ERRORS: Record<string, string> = {
   error: "No pudimos iniciar sesión. Probá de nuevo.",
   login: "Iniciá sesión para entrar al panel.",
+  denied: "Tu cuenta de Google necesita tener el email verificado.",
   config: "El login todavía no está configurado en el servidor.",
 };
 
@@ -41,12 +43,11 @@ function Modal({ onClose, error }: { onClose: () => void; error: string }) {
         </button>
         <span className="eyebrow">Registro</span>
         <h2 id="auth-t">Creá tu perfil</h2>
-        <p>Guardá tu equipo, rol y categoría. Gratis, con tu cuenta de Google.</p>
-        {/* Navegación completa: el flujo OAuth sale a Google y vuelve a /callback */}
-        <a className="g-btn" href="/api/auth/google">
+        <p>Armá tu equipo y cargá tu entrega. Gratis, con tu cuenta de Google.</p>
+        <button type="button" className="g-btn" onClick={() => signIn("google", { callbackUrl: "/panel" })}>
           <GoogleG />
           Continuar con Google
-        </a>
+        </button>
         {error && (
           <p className="modal-err" role="alert">
             {error}
@@ -66,7 +67,8 @@ export default function AuthButton() {
   useEffect(() => {
     const on = () => setOpen(true);
     window.addEventListener(OPEN_AUTH_EVT, on);
-    const q = new URLSearchParams(window.location.search).get("auth");
+    const sp = new URLSearchParams(window.location.search);
+    const q = sp.get("auth") ?? (sp.get("error") ? (sp.get("error") === "AccessDenied" ? "denied" : "error") : null);
     if (q && ERRORS[q]) {
       setError(ERRORS[q]);
       setOpen(true);
