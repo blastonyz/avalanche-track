@@ -17,6 +17,16 @@ export default function Hero() {
               <span>a la cadena</span>
             </h1>
           </div>
+          <div className="hero-aside">
+            <div className="hero-actions">
+              <a className="btn btn--small" href={REFERRAL_URL} target="_blank" rel="noopener noreferrer">
+                Crear cuenta en Builder Hub
+              </a>
+              <Link className="btn btn--ghost btn--small" href="/guia">
+                Empezar la guía
+              </Link>
+            </div>
+          </div>
         </div>
 
         <HeroLive />
@@ -33,14 +43,6 @@ export default function Hero() {
           <div>
             <dt>Entrega</dt>
             <dd>Viernes 13/11, tercera jornada</dd>
-          </div>
-          <div className="hero-cta">
-            <a className="btn btn--small" href={REFERRAL_URL} target="_blank" rel="noopener noreferrer">
-              Crear cuenta en Builder Hub
-            </a>
-            <Link className="btn btn--ghost btn--small" href="/guia">
-              Empezar la guía
-            </Link>
           </div>
         </dl>
       </div>

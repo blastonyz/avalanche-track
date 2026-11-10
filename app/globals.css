@@ -3184,29 +3184,15 @@ a.g-btn {
   .routes a::before, .routes a::after, .routes .go::after { transition: none; }
 }
 
-/* ───────── Hero: botones en la fila de datos; menú móvil con scroll ───────── */
+/* ───────── Hero: botones arriba a la derecha (alineados al borde del mapa); menú móvil con scroll ───────── */
 
-.hero-top { grid-template-columns: 1fr; }
-.hero-facts { grid-template-columns: repeat(3, 1fr) minmax(220px, 260px); }
-.hero-facts > .hero-cta {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 8px;
-  padding: 16px 0 16px 20px;
-}
-.hero-cta .btn { justify-content: center; text-align: center; }
+.hero-top { grid-template-columns: 1fr auto; }
+.hero-aside { justify-self: end; }
+.hero-actions { width: min(100%, 260px); }
 @media (max-width: 960px) {
-  .hero-facts { grid-template-columns: 1fr; }
-  .hero-facts > .hero-cta {
-    width: min(100%, 260px);
-    margin-inline: auto;
-    padding: 20px 0 8px;
-    border-left: 0;
-    border-top: 1px solid var(--line);
-    align-items: stretch;
-  }
-  .hero-facts { text-align: left; }
+  .hero-top { grid-template-columns: 1fr; }
+  .hero-aside { justify-self: center; width: 100%; justify-items: center; }
+  .hero-actions { margin-inline: auto; }
   /* el menú desplegable debe poder scrollearse entero */
   .nav-links {
     max-height: calc(100dvh - 120px);

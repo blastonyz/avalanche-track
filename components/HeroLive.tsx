@@ -1,10 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { LAND_PATH } from "@/lib/worldPath";
 import { SALTA } from "@/lib/links";
-import CopyButton from "./CopyButton";
 
 type Fix = { lat: number; lon: number; alt: number; vel: number; ts: number };
 type Status = "loading" | "ok" | "error";
@@ -25,13 +23,6 @@ function km(a: { lat: number; lon: number }, b: { lat: number; lon: number }) {
     Math.sin(dLat / 2) ** 2 +
     Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.sin(dLon / 2) ** 2;
   return 2 * R * Math.asin(Math.sqrt(h));
-}
-
-async function sha256Hex(text: string) {
-  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
-  return Array.from(new Uint8Array(buf))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
 }
 
 function toFix(j: Record<string, number>): Fix {
@@ -68,7 +59,6 @@ export default function HeroLive() {
   const [fix, setFix] = useState<Fix | null>(null);
   const [trail, setTrail] = useState<Fix[]>([]);
   const [past, setPast] = useState<Fix[]>([]);
-  const [hash, setHash] = useState("");
   const [now, setNow] = useState<number>(0);
   const [visible, setVisible] = useState(true);
   const boxRef = useRef<HTMLDivElement>(null);
@@ -96,8 +86,6 @@ export default function HeroLive() {
         const merged = [...t.filter((x) => x.ts !== f.ts), f].sort((a, b) => a.ts - b.ts);
         return merged.slice(-300);
       });
-      const canonical = `iss25544|${f.ts}|${f.lat.toFixed(4)}|${f.lon.toFixed(4)}`;
-      setHash(await sha256Hex(canonical));
     } catch {
       setStatus((s) => (s === "ok" ? "ok" : "error"));
     }
@@ -142,7 +130,6 @@ export default function HeroLive() {
   const paths = useMemo(() => trailPaths(trail), [trail]);
   const dist = fix ? Math.round(km(fix, SALTA)) : null;
   const age = fix && now ? Math.max(0, Math.round(now / 1000 - fix.ts)) : null;
-  const short = hash ? `0x${hash.slice(0, 10)}…${hash.slice(-8)}` : "calculando…";
   const fmt = (n: number, d = 2) =>
     n.toLocaleString("es-AR", { minimumFractionDigits: d, maximumFractionDigits: d });
 
@@ -324,32 +311,6 @@ export default function HeroLive() {
         <div>
           <b>{dist !== null ? `${fmt(dist, 0)} km` : "—"}</b>
           <span>distancia a Salta</span>
-        </div>
-      </div>
-
-      <div className="pipe">
-        <div>
-          <span className="pipe-n">1</span>
-          <h3>Dato</h3>
-          <code>
-            {fix
-              ? `iss25544|${fix.ts}|${fix.lat.toFixed(4)}|${fix.lon.toFixed(4)}`
-              : "esperando lectura…"}
-          </code>
-        </div>
-        <div>
-          <span className="pipe-n">2</span>
-          <h3>Huella SHA-256</h3>
-          <code>{short}</code>
-          {hash && <CopyButton text={`0x${hash}`} label="Copiar huella" />}
-        </div>
-        <div>
-          <span className="pipe-n">3</span>
-          <h3>Contrato</h3>
-          <p>Guarda solo la huella. Demo: no se envía nada.</p>
-          <Link className="btn btn--ghost btn--small" href="/blockchain#oraculo">
-            Cómo llevarlo a Fuji
-          </Link>
         </div>
       </div>
     </div>
