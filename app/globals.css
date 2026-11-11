@@ -320,6 +320,19 @@ button.chip[aria-pressed="true"] {
   background: var(--orange);
   flex: none;
 }
+.countdown-cta {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--bg-black);
+  background: var(--orange);
+  padding: 6px 12px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.countdown-cta:hover { filter: brightness(1.1); }
+.countdown-cta:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
 .countdown-units {
   display: flex;
   gap: 18px;

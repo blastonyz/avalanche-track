@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { DEADLINE_ISO } from "@/lib/links";
+import { DEADLINE_ISO, ENTREGA_URL } from "@/lib/links";
 
 type Left = { d: number; h: number; m: number; s: number; done: boolean };
 
@@ -43,6 +43,10 @@ export default function Countdown() {
               : "Cuenta regresiva hasta el viernes 13/11/2026, 09:00, hora de Argentina"}
           </span>
         </div>
+        <a className="countdown-cta" href={ENTREGA_URL} target="_blank" rel="noopener noreferrer">
+          Entrega <span aria-hidden="true">↗</span>
+          <span className="sr-only"> (se abre en una pestaña nueva)</span>
+        </a>
         <div className="countdown-units" role="timer" aria-label="Tiempo restante">
           {[
             ["días", left ? pad(left.d) : "--"],

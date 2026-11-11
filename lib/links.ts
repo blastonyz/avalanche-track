@@ -9,6 +9,7 @@ export const L1_COURSE_URL =
   "https://docs.avax.network/academy/avalanche-l1/avalanche-fundamentals/04-creating-an-l1/01-creating-an-l1";
 
 export const COMPETENCIA_URL = "https://competencia.argentinaspace.com";
+export const ENTREGA_URL = "https://hacki.crecimiento.build/h/competencia-argentina-space";
 export const REGLAMENTO_URL = "https://competencia.argentinaspace.com/reglamento";
 
 export const SKILLS_REPO = process.env.NEXT_PUBLIC_SKILLS_REPO || "";
